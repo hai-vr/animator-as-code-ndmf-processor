@@ -7,11 +7,12 @@ using UnityEngine;
 namespace NdmfAsCode.V1
 {
     // Can't be abstract
-    // public class AbstractNdmfAsCodePlugin<T> : Plugin<AbstractNdmfAsCodePlugin<T>> where T : MonoBehaviour
-    public class AbstractNdmfAsCodePlugin : Plugin<AbstractNdmfAsCodePlugin>
+    // and also, can't be generic, it crashes
+    public class NdmfAsCodePlugin<T> : Plugin<NdmfAsCodePlugin<T>> where T : MonoBehaviour
+    // public class NdmfAsCodePlugin : Plugin<NdmfAsCodePlugin>
     {
         // Must be changed
-        protected virtual Type ScriptType => typeof(AbstractNdmfAsCodePlugin);
+        // protected virtual Type ScriptType => GetType().GetCustomAttribute<NdmfAsCode>(false).ScriptType;
         
         // Can be changed if necessary
         protected virtual string SystemName(Component script, BuildContext context) => GetType().Name;
@@ -21,10 +22,11 @@ namespace NdmfAsCode.V1
 
         //
         
-        protected AacFlBase aac;
-        protected Component script;
-        protected BuildContext buildContext;
-        
+        // This state is short-lived, it's really just sugar
+        protected AacFlBase aac { get; private set; }
+        protected T my { get; private set; }
+        protected BuildContext context { get; private set; }
+
         public override string QualifiedName => $"dev.hai-vr.ndmf-processor::{GetType().FullName}";
         public override string DisplayName => $"NdmfAsCode for {GetType().Name}";
 
@@ -35,11 +37,11 @@ namespace NdmfAsCode.V1
 
         protected override void Configure()
         {
-            if (GetType() == typeof(AbstractNdmfAsCodePlugin)) return;
+            if (GetType() == typeof(NdmfAsCodePlugin<>)) return;
             
             InPhase(BuildPhase.Generating).Run($"Run NdmfAsCode for {GetType().Name}", ctx =>
             {
-                var scripts = ctx.AvatarRootObject.GetComponentsInChildren(ScriptType, true);
+                var scripts = ctx.AvatarRootObject.GetComponentsInChildren(typeof(T), true);
                 foreach (var currentScript in scripts)
                 {
                     aac = AacV1.Create(new AacConfiguration
@@ -51,10 +53,15 @@ namespace NdmfAsCode.V1
                         GenericAssetContainer = ctx.AssetContainer,
                         DefaultsProvider = new AacDefaultsProvider(UseWriteDefaults(currentScript, ctx))
                     });
-                    script = currentScript;
-                    buildContext = ctx;
+                    my = (T)currentScript;
+                    context = ctx;
                     Execute();
                 }
+
+                // Get rid of the short-lived sugar fields
+                aac = null;
+                my = null;
+                context = null;
             });
         }
     }
@@ -62,6 +69,17 @@ namespace NdmfAsCode.V1
     // public interface INdmfAsCodeProcessor<T> where T : MonoBehaviour
     // {
         // void Execute(T current, BuildContext x);
+    // }
+    
+    // [System.AttributeUsage(System.AttributeTargets.Class)]
+    // public class NdmfAsCode : System.Attribute
+    // {
+    //     public Type ScriptType { get; }
+    //
+    //     public NdmfAsCode(Type ScriptType)
+    //     {
+    //         this.ScriptType = ScriptType;
+    //     }
     // }
 
     public struct NdmfAsCodeOutput
@@ -78,7 +96,7 @@ namespace NdmfAsCode.V1
             };
         }
 
-        public static NdmfAsCodeOutput MergeIntoDirectBlendTree(Motion[] motionsToAddInSharedDirectBlendTree)
+        public static NdmfAsCodeOutput MergeIntoDirectBlendTree(params Motion[] motionsToAddInSharedDirectBlendTree)
         {
             return new NdmfAsCodeOutput
             {

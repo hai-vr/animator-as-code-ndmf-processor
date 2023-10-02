@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using ModularAvatarAsCode.V1;
 using nadena.dev.ndmf;
 using NdmfAsCode.V1.Example;
@@ -16,14 +15,10 @@ namespace NdmfAsCode.V1.Example
         public Texture2D icon;
     }
 
-    public class NdmfAsCodeToggleProcessor : AbstractNdmfAsCodePlugin
+    public class NdmfAsCodeToggleProcessor : NdmfAsCodePlugin<NdmfAsCodeToggle>
     {
-        protected override Type ScriptType => typeof(NdmfAsCodeToggle);
-
         protected override NdmfAsCodeOutput Execute()
         {
-            var my = (NdmfAsCodeToggle)script;
-            
             var ctrl = aac.NewAnimatorController();
             var fx = ctrl.NewLayer();
             
@@ -34,7 +29,7 @@ namespace NdmfAsCode.V1.Example
             off.TransitionsTo(on).When(param.IsTrue());
             on.TransitionsTo(off).When(param.IsFalse());
 
-            var maAc = MaAc.Create(script.gameObject);
+            var maAc = MaAc.Create(base.my.gameObject);
             maAc.NewMergeAnimator(ctrl, VRCAvatarDescriptor.AnimLayerType.FX);
             maAc.NewParameter(param);
             maAc.EditMenuItemOnSelf().Toggle(param).Name(my.gameObject.name).WithIcon(my.icon);
