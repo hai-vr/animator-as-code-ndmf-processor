@@ -1,34 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AnimatorAsCode.V1;
+using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
-using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
 namespace NdmfAsCode.V1
 {
-    // Can't be abstract
-    // and also, can't be generic, it crashes
     public class AacPlugin<T> : Plugin<AacPlugin<T>> where T : MonoBehaviour
-    // public class NdmfAsCodePlugin : Plugin<NdmfAsCodePlugin>
     {
-        // Must be changed
-        // protected virtual Type ScriptType => GetType().GetCustomAttribute<NdmfAsCode>(false).ScriptType;
-        
         // Can be changed if necessary
-        protected virtual string SystemName(Component script, BuildContext context) => GetType().Name;
-        protected virtual Transform AnimatorRoot(Component script, BuildContext context) => context.AvatarRootTransform;
-        protected virtual Transform DefaultValueRoot(Component script, BuildContext context) => context.AvatarRootTransform;
-        protected virtual bool UseWriteDefaults(Component script, BuildContext context) => false;
+        [PublicAPI] protected virtual string SystemName(Component script, BuildContext ctx) => GetType().Name;
+        [PublicAPI] protected virtual Transform AnimatorRoot(Component script, BuildContext ctx) => ctx.AvatarRootTransform;
+        [PublicAPI] protected virtual Transform DefaultValueRoot(Component script, BuildContext ctx) => ctx.AvatarRootTransform;
+        [PublicAPI] protected virtual bool UseWriteDefaults(Component script, BuildContext ctx) => false;
 
-        //
-        
         // This state is short-lived, it's really just sugar
-        protected AacFlBase aac { get; private set; }
-        protected T my { get; private set; }
-        protected BuildContext context { get; private set; }
+        [PublicAPI] protected AacFlBase aac { get; private set; }
+        [PublicAPI] protected T my { get; private set; }
+        [PublicAPI] protected BuildContext context { get; private set; }
 
         public override string QualifiedName => $"dev.hai-vr.ndmf-processor::{GetType().FullName}";
         public override string DisplayName => $"NdmfAsCode for {GetType().Name}";
@@ -44,6 +37,8 @@ namespace NdmfAsCode.V1
             
             InPhase(BuildPhase.Generating).Run($"Run NdmfAsCode for {GetType().Name}", ctx =>
             {
+                var results = new List<AacPluginOuput>();
+                
                 var scripts = ctx.AvatarRootObject.GetComponentsInChildren(typeof(T), true);
                 foreach (var currentScript in scripts)
                 {
@@ -58,6 +53,7 @@ namespace NdmfAsCode.V1
                     });
                     my = (T)currentScript;
                     context = ctx;
+                    
                     Execute();
                 }
 
@@ -65,8 +61,16 @@ namespace NdmfAsCode.V1
                 aac = null;
                 my = null;
                 context = null;
+
+                var state = ctx.GetState<InternalAacPluginState>();
+                state.directBlendTreeMembers = results.SelectMany(output => output.members).ToArray();
             });
         }
+    }
+
+    internal class InternalAacPluginState
+    {
+        public AacPluginOuput.DirectBlendTreeMember[] directBlendTreeMembers;
     }
 
     public struct AacPluginOuput
