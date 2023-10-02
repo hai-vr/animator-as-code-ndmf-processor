@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  packageName: "dev.hai-vr.animator-as-code.v1.vrchat-destructive-workflow"
+  packageName: "dev.hai-vr.animator-as-code.v1.ndmf-processor"
 
 permissions:
   contents: write
