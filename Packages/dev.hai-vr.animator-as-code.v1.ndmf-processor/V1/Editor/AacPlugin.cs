@@ -4,6 +4,7 @@ using System.Linq;
 using AnimatorAsCode.V1;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
+using NdmfAsCode.V1.DBT;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -34,8 +35,10 @@ namespace NdmfAsCode.V1
         protected override void Configure()
         {
             if (GetType() == typeof(AacPlugin<>)) return;
-            
-            InPhase(BuildPhase.Generating).Run($"Run NdmfAsCode for {GetType().Name}", ctx =>
+
+            InPhase(BuildPhase.Generating)
+                .BeforePlugin<>(NdmfAacDBTPlugin.Instance)
+                .Run($"Run NdmfAsCode for {GetType().Name}", ctx =>
             {
                 var results = new List<AacPluginOuput>();
                 
@@ -109,7 +112,7 @@ namespace NdmfAsCode.V1
             public VRCAvatarDescriptor.AnimLayerType layerType;
             public Motion member;
             
-            public AacFlFloatParameter parameterOptional;
+            public string parameterOptional;
         }
     }
 }
