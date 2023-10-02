@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Linq;
 using AnimatorAsCode.V1;
 using nadena.dev.ndmf;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 
 namespace NdmfAsCode.V1
 {
     // Can't be abstract
     // and also, can't be generic, it crashes
-    public class NdmfAsCodePlugin<T> : Plugin<NdmfAsCodePlugin<T>> where T : MonoBehaviour
+    public class AacPlugin<T> : Plugin<AacPlugin<T>> where T : MonoBehaviour
     // public class NdmfAsCodePlugin : Plugin<NdmfAsCodePlugin>
     {
         // Must be changed
@@ -30,14 +33,14 @@ namespace NdmfAsCode.V1
         public override string QualifiedName => $"dev.hai-vr.ndmf-processor::{GetType().FullName}";
         public override string DisplayName => $"NdmfAsCode for {GetType().Name}";
 
-        protected virtual NdmfAsCodeOutput Execute()
+        protected virtual AacPluginOuput Execute()
         {
-            return NdmfAsCodeOutput.Regular();
+            return AacPluginOuput.Regular();
         }
 
         protected override void Configure()
         {
-            if (GetType() == typeof(NdmfAsCodePlugin<>)) return;
+            if (GetType() == typeof(AacPlugin<>)) return;
             
             InPhase(BuildPhase.Generating).Run($"Run NdmfAsCode for {GetType().Name}", ctx =>
             {
@@ -66,49 +69,43 @@ namespace NdmfAsCode.V1
         }
     }
 
-    // public interface INdmfAsCodeProcessor<T> where T : MonoBehaviour
-    // {
-        // void Execute(T current, BuildContext x);
-    // }
-    
-    // [System.AttributeUsage(System.AttributeTargets.Class)]
-    // public class NdmfAsCode : System.Attribute
-    // {
-    //     public Type ScriptType { get; }
-    //
-    //     public NdmfAsCode(Type ScriptType)
-    //     {
-    //         this.ScriptType = ScriptType;
-    //     }
-    // }
-
-    public struct NdmfAsCodeOutput
+    public struct AacPluginOuput
     {
-        public Motion[] directBlendTreeMembers;
-        public NdmfAsCodeWeightedDirectBlendTreeMember[] weightedMembers;
+        public DirectBlendTreeMember[] members;
 
-        public static NdmfAsCodeOutput Regular()
+        public static AacPluginOuput Regular()
         {
-            return new NdmfAsCodeOutput
+            return new AacPluginOuput
             {
-                directBlendTreeMembers = Array.Empty<Motion>(),
-                weightedMembers = Array.Empty<NdmfAsCodeWeightedDirectBlendTreeMember>()
+                members = Array.Empty<DirectBlendTreeMember>()
             };
         }
 
-        public static NdmfAsCodeOutput MergeIntoDirectBlendTree(params Motion[] motionsToAddInSharedDirectBlendTree)
+        public static AacPluginOuput DirectBlendTree(VRCAvatarDescriptor.AnimLayerType layerType, params AacFlBlendTree[] members)
         {
-            return new NdmfAsCodeOutput
+            return DirectBlendTree(layerType, members.Select(tree => (Motion)tree.BlendTree).ToArray());
+        }
+
+        public static AacPluginOuput DirectBlendTree(VRCAvatarDescriptor.AnimLayerType layerType, params Motion[] members)
+        {
+            return new AacPluginOuput
             {
-                directBlendTreeMembers = motionsToAddInSharedDirectBlendTree,
-                weightedMembers = Array.Empty<NdmfAsCodeWeightedDirectBlendTreeMember>()
+                members = members
+                    .Select(motion => new DirectBlendTreeMember
+                    {
+                        layerType = layerType,
+                        member = motion
+                    })
+                    .ToArray()
             };
         }
-    }
     
-    public struct NdmfAsCodeWeightedDirectBlendTreeMember
-    {
-        public AacFlFloatParameter parameter;
-        public Motion member;
+        public struct DirectBlendTreeMember
+        {
+            public VRCAvatarDescriptor.AnimLayerType layerType;
+            public Motion member;
+            
+            public AacFlFloatParameter parameterOptional;
+        }
     }
 }
