@@ -24,6 +24,7 @@ namespace NdmfAsCode.V1.DBT
             
             InPhase(BuildPhase.Generating).Run($"NdmfAsCode Create Shared Direct Blend Trees", ctx =>
             {
+                Debug.Log($"(self-log) Running aac direct blend tree builder ({GetType().FullName}");
                 var aac = AacV1.Create(new AacConfiguration
                 {
                     SystemName = "AacNdmfDBT",
@@ -35,6 +36,7 @@ namespace NdmfAsCode.V1.DBT
                 });
 
                 var state = ctx.GetState<InternalAacPluginState>();
+                if (state.directBlendTreeMembers == null) state.directBlendTreeMembers = Array.Empty<AacPluginOutput.DirectBlendTreeMember>();
                 var playableLayerToController = new Dictionary<VRCAvatarDescriptor.AnimLayerType, AnimatorController>();
                 foreach (var layerToMembers in state.directBlendTreeMembers.GroupBy(member => member.layerType))
                 {
