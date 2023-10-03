@@ -14,10 +14,10 @@ namespace NdmfAsCode.V1
     public class AacPlugin<T> : Plugin<AacPlugin<T>> where T : MonoBehaviour
     {
         // Can be changed if necessary
-        [PublicAPI] protected virtual string SystemName(Component script, BuildContext ctx) => GetType().Name;
-        [PublicAPI] protected virtual Transform AnimatorRoot(Component script, BuildContext ctx) => ctx.AvatarRootTransform;
-        [PublicAPI] protected virtual Transform DefaultValueRoot(Component script, BuildContext ctx) => ctx.AvatarRootTransform;
-        [PublicAPI] protected virtual bool UseWriteDefaults(Component script, BuildContext ctx) => false;
+        [PublicAPI] protected virtual string SystemName(T script, BuildContext ctx) => GetType().Name;
+        [PublicAPI] protected virtual Transform AnimatorRoot(T script, BuildContext ctx) => ctx.AvatarRootTransform;
+        [PublicAPI] protected virtual Transform DefaultValueRoot(T script, BuildContext ctx) => ctx.AvatarRootTransform;
+        [PublicAPI] protected virtual bool UseWriteDefaults(T script, BuildContext ctx) => false;
 
         // This state is short-lived, it's really just sugar
         [PublicAPI] protected AacFlBase aac { get; private set; }
@@ -27,9 +27,9 @@ namespace NdmfAsCode.V1
         public override string QualifiedName => $"dev.hai-vr.ndmf-processor::{GetType().FullName}";
         public override string DisplayName => $"NdmfAsCode for {GetType().Name}";
 
-        protected virtual AacPluginOuput Execute()
+        protected virtual AacPluginOutput Execute()
         {
-            return AacPluginOuput.Regular();
+            return AacPluginOutput.Regular();
         }
 
         protected override void Configure()
@@ -40,21 +40,22 @@ namespace NdmfAsCode.V1
                 .BeforePlugin<>(NdmfAacDBTPlugin.Instance)
                 .Run($"Run NdmfAsCode for {GetType().Name}", ctx =>
             {
-                var results = new List<AacPluginOuput>();
+                var results = new List<AacPluginOutput>();
                 
                 var scripts = ctx.AvatarRootObject.GetComponentsInChildren(typeof(T), true);
                 foreach (var currentScript in scripts)
                 {
+                    var script = (T)currentScript;
                     aac = AacV1.Create(new AacConfiguration
                     {
-                        SystemName = SystemName(currentScript, ctx),
-                        AnimatorRoot = AnimatorRoot(currentScript, ctx),
-                        DefaultValueRoot = DefaultValueRoot(currentScript, ctx),
+                        SystemName = SystemName(script, ctx),
+                        AnimatorRoot = AnimatorRoot(script, ctx),
+                        DefaultValueRoot = DefaultValueRoot(script, ctx),
                         AssetKey = GUID.Generate().ToString(),
                         GenericAssetContainer = ctx.AssetContainer,
-                        DefaultsProvider = new AacDefaultsProvider(UseWriteDefaults(currentScript, ctx))
+                        DefaultsProvider = new AacDefaultsProvider(UseWriteDefaults(script, ctx))
                     });
-                    my = (T)currentScript;
+                    my = script;
                     context = ctx;
                     
                     Execute();
@@ -73,29 +74,29 @@ namespace NdmfAsCode.V1
 
     internal class InternalAacPluginState
     {
-        public AacPluginOuput.DirectBlendTreeMember[] directBlendTreeMembers;
+        public AacPluginOutput.DirectBlendTreeMember[] directBlendTreeMembers;
     }
 
-    public struct AacPluginOuput
+    public struct AacPluginOutput
     {
         public DirectBlendTreeMember[] members;
 
-        public static AacPluginOuput Regular()
+        public static AacPluginOutput Regular()
         {
-            return new AacPluginOuput
+            return new AacPluginOutput
             {
                 members = Array.Empty<DirectBlendTreeMember>()
             };
         }
 
-        public static AacPluginOuput DirectBlendTree(VRCAvatarDescriptor.AnimLayerType layerType, params AacFlBlendTree[] members)
+        public static AacPluginOutput DirectBlendTree(VRCAvatarDescriptor.AnimLayerType layerType, params AacFlBlendTree[] members)
         {
             return DirectBlendTree(layerType, members.Select(tree => (Motion)tree.BlendTree).ToArray());
         }
 
-        public static AacPluginOuput DirectBlendTree(VRCAvatarDescriptor.AnimLayerType layerType, params Motion[] members)
+        public static AacPluginOutput DirectBlendTree(VRCAvatarDescriptor.AnimLayerType layerType, params Motion[] members)
         {
-            return new AacPluginOuput
+            return new AacPluginOutput
             {
                 members = members
                     .Select(motion => new DirectBlendTreeMember
