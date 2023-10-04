@@ -57,8 +57,8 @@ namespace NdmfAsCode.V1
                             AnimatorRoot = AnimatorRoot(script, ctx),
                             DefaultValueRoot = DefaultValueRoot(script, ctx),
                             AssetKey = GUID.Generate().ToString(),
-                            AssetContainer = persistentContainer,
-                            // GenericAssetContainer = ctx.AssetContainer,
+                            AssetContainer = ctx.AssetContainer,
+                            ContainerMode = AacConfiguration.Container.OnlyWhenPersistenceRequired,
                             DefaultsProvider = new AacDefaultsProvider(UseWriteDefaults(script, ctx))
                         });
                         my = script;

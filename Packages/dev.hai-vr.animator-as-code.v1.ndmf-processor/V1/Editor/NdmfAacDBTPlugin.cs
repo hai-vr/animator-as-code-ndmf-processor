@@ -31,7 +31,7 @@ namespace NdmfAsCode.V1.DBT
                     AnimatorRoot = ctx.AvatarRootTransform,
                     DefaultValueRoot = ctx.AvatarRootTransform,
                     AssetKey = GUID.Generate().ToString(),
-                    GenericAssetContainer = ctx.AssetContainer,
+                    AssetContainer = ctx.AssetContainer,
                     DefaultsProvider = new AacDefaultsProvider(true)
                 });
 
