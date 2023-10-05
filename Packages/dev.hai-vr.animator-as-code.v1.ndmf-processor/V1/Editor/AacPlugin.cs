@@ -6,7 +6,6 @@ using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using NdmfAsCode.V1.DBT;
 using UnityEditor;
-using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
@@ -40,10 +39,6 @@ namespace NdmfAsCode.V1
             InPhase(BuildPhase.Generating)
                 .Run($"Run NdmfAsCode for {GetType().Name}", ctx =>
                 {
-                    // Generating controllers requires that we have a persistent container
-                    // so that Unity can create inner states, etc.
-                    var persistentContainer = EnsureContainerCreated(ctx); 
-                    
                     Debug.Log($"(self-log) Running aac plugin ({GetType().FullName}");
                     var results = new List<AacPluginOutput>();
 
@@ -77,26 +72,6 @@ namespace NdmfAsCode.V1
                 })
                 .BeforePlugin((NdmfAacDBTPlugin)NdmfAacDBTPlugin.Instance);
         }
-
-        private AnimatorController EnsureContainerCreated(BuildContext buildContext)
-        {
-            var state = buildContext.GetState<InternalAacPluginContainerState>();
-            if (state.garbage != null) return state.garbage;
-
-            var container = new AnimatorController();
-            container.name =
-                $"zAacGarbage-{DateTime.Now.ToString("yyyy'-'MM'-'dd'_'HHmmss")}-{GUID.Generate().ToString().Substring(0, 8)}";
-            AssetDatabase.CreateAsset(container, $"Assets/{container.name}.asset");
-
-            state.garbage = container;
-
-            return container;
-        }
-    }
-
-    internal class InternalAacPluginContainerState
-    {
-        public AnimatorController garbage;
     }
 
     internal class InternalAacPluginState
