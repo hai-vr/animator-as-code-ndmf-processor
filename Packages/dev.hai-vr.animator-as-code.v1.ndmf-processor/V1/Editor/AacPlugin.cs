@@ -67,8 +67,21 @@ namespace NdmfAsCode.V1
                     my = null;
                     context = null;
 
+                    var overrides = new Dictionary<string, float>();
+                    foreach (var result in results)
+                    {
+                        foreach (var over in result.overrides)
+                        {
+                            if (!overrides.ContainsKey(over.Key))
+                            {
+                                overrides.Add(over.Key, over.Value);
+                            }
+                        }
+                    }
+                    
                     var state = ctx.GetState<InternalAacPluginState>();
                     state.directBlendTreeMembers = results.SelectMany(output => output.members).ToArray();
+                    state.directBlendTreeOverrides = overrides;
                 })
                 .BeforePlugin((NdmfAacDBTPlugin)NdmfAacDBTPlugin.Instance);
         }
@@ -77,17 +90,32 @@ namespace NdmfAsCode.V1
     internal class InternalAacPluginState
     {
         public AacPluginOutput.DirectBlendTreeMember[] directBlendTreeMembers;
+        public Dictionary<string, float> directBlendTreeOverrides;
     }
 
     public struct AacPluginOutput
     {
         public DirectBlendTreeMember[] members;
+        public Dictionary<string, float> overrides;
+
+        public AacPluginOutput OverrideValue(AacFlParameter parameter, float value)
+        {
+            overrides.Add(parameter.Name, value);
+            return this;
+        }
+
+        public AacPluginOutput OverrideValue(string parameter, float value)
+        {
+            overrides.Add(parameter, value);
+            return this;
+        }
 
         public static AacPluginOutput Regular()
         {
             return new AacPluginOutput
             {
-                members = Array.Empty<DirectBlendTreeMember>()
+                members = Array.Empty<DirectBlendTreeMember>(),
+                overrides = new Dictionary<string, float>()
             };
         }
 
@@ -106,7 +134,8 @@ namespace NdmfAsCode.V1
                         layerType = layerType,
                         member = motion
                     })
-                    .ToArray()
+                    .ToArray(),
+                overrides = new Dictionary<string, float>()
             };
         }
     

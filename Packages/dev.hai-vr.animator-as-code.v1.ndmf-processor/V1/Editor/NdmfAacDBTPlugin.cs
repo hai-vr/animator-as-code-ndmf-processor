@@ -37,33 +37,43 @@ namespace NdmfAsCode.V1.DBT
 
                 var state = ctx.GetState<InternalAacPluginState>();
                 if (state.directBlendTreeMembers == null) state.directBlendTreeMembers = Array.Empty<AacPluginOutput.DirectBlendTreeMember>();
+                if (state.directBlendTreeOverrides == null) state.directBlendTreeOverrides = new Dictionary<string, float>();
+                
                 var playableLayerToController = new Dictionary<VRCAvatarDescriptor.AnimLayerType, AnimatorController>();
-                foreach (var layerToMembers in state.directBlendTreeMembers.GroupBy(member => member.layerType))
+                foreach (var playableLayerToMember in state.directBlendTreeMembers.GroupBy(member => member.layerType))
                 {
-                    var layer = layerToMembers.Key;
+                    var playableLayer = playableLayerToMember.Key;
 
                     var ctrl = aac.NewAnimatorController();
-                    var fx = ctrl.NewLayer();
-                    var one = fx.FloatParameter("AacNdmf_One");
-                    fx.OverrideValue(one, 1f);
+                    var layer = ctrl.NewLayer();
+                    var one = layer.FloatParameter("AacNdmf_One");
+                    layer.OverrideValue(one, 1f);
                     
                     var dbt = aac.NewBlendTree()
                         .Direct();
                     
-                    foreach (var member in layerToMembers)
+                    foreach (var member in playableLayerToMember)
                     {
                         dbt.WithAnimation(member.member, member.parameterOptional != null
-                            ? fx.FloatParameter(member.parameterOptional)
+                            ? layer.FloatParameter(member.parameterOptional)
                             : one);
-                        fx.FloatParameters(FindAllBTParams(member.member));
+                        var allBtParams = FindAllBTParams(member.member);
+                        layer.FloatParameters(allBtParams);
+                        foreach (var paramInBt in allBtParams)
+                        {
+                            if (state.directBlendTreeOverrides.TryGetValue(paramInBt, out var value))
+                            {
+                                layer.OverrideValue(layer.FloatParameter(paramInBt), value);
+                            }
+                        }
                     }
                 
-                    fx.NewState("DBT_AutoMerge")
+                    layer.NewState("DBT_AutoMerge")
                         // DBTs always use Write Defaults
                         .WithWriteDefaultsSetTo(true)
                         .WithAnimation(dbt); 
                     
-                    playableLayerToController.Add(layer, ctrl.AnimatorController);
+                    playableLayerToController.Add(playableLayer, ctrl.AnimatorController);
                 }
                 
                 if (playableLayerToController.Count > 0)
@@ -77,7 +87,8 @@ namespace NdmfAsCode.V1.DBT
                         }
                     };
                 
-                    // TODO: Make NDMF depend on Modular Avatar
+                    // TODO: Make NDMF depend on Modular Avatar...???
+                    // TODO: but what if the user uses VRCFury?
                     // var ma = MaAc.Create(dbtHolder);
                     // foreach (var dbt in playableLayerToController)
                     // {
