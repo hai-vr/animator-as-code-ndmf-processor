@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AnimatorAsCode.V1;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
-using NdmfAsCode.V1.DBT;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
-namespace NdmfAsCode.V1
+namespace AnimatorAsCode.V1.NDMFProcessor
 {
     public class AacPlugin<T> : Plugin<AacPlugin<T>> where T : MonoBehaviour
     {

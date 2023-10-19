@@ -2,16 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AnimatorAsCode.V1;
+using AnimatorAsCode.V1.NDMFProcessor;
 using nadena.dev.ndmf;
-using NdmfAsCode.V1.DBT;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
 [assembly: ExportsPlugin(typeof(NdmfAacDBTPlugin))]
-namespace NdmfAsCode.V1.DBT
+namespace AnimatorAsCode.V1.NDMFProcessor
 {
     public sealed class NdmfAacDBTPlugin : Plugin<NdmfAacDBTPlugin>
     {
