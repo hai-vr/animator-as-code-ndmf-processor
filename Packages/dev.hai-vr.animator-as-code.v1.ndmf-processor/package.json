@@ -1,16 +1,19 @@
 {
   "name": "dev.hai-vr.animator-as-code.v1.ndmf-processor",
-  "displayName": "Animator As Code - NDMF Processor (Alpha)",
-  "version": "1.0.9922",
+  "displayName": "Animator As Code - NDMF Processor (Deprecated)",
+  "version": "1.0.9940",
   "unity": "2019.4",
-  "description": "Execute Animator As Code scripts when an avatar is being processed by NDM Framework.",
+  "description": "This package is deprecated. You should be able to safely uninstall this from your project.",
   "vrchatVersion" : "2022.1.1",
   "author" : {
     "name" : "Haï~"
   },
   "vpmDependencies": {
     "dev.hai-vr.animator-as-code.v1": "1.0.x",
-    "nadena.dev.ndmf": ">=1.2.0 <1.4.0"
+    "nadena.dev.ndmf": ">=1.2.0 <2.0.0-a"
   },
-  "url" : "https://docs.hai-vr.dev/docs/products/animator-as-code/functions/ndmf-processor"
+  "url" : "https://docs.hai-vr.dev/docs/products/animator-as-code/functions/ndmf-processor",
+  "documentationUrl": "https://docs.hai-vr.dev/docs/products/animator-as-code/functions/ndmf-processor",
+  "changelogUrl": "https://docs.hai-vr.dev/docs/products/animator-as-code/functions/ndmf-processor#depreciation",
+  "license": "MIT"
 }
