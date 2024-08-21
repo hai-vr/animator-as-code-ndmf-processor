@@ -1,7 +1,7 @@
 {
   "name": "dev.hai-vr.animator-as-code.v1.ndmf-processor",
   "displayName": "Animator As Code V1 - NDMF Processor (Deprecated)",
-  "version": "1.1.0-beta.3",
+  "version": "1.1.0",
   "unity": "2019.4",
   "description": "This package is deprecated. You should be able to safely uninstall this from your project.",
   "vrchatVersion" : "2022.1.1",
