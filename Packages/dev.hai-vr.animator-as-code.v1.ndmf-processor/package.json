@@ -1,10 +1,9 @@
 {
   "name": "dev.hai-vr.animator-as-code.v1.ndmf-processor",
   "displayName": "Animator As Code V1 - NDMF Processor (Deprecated)",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "unity": "2019.4",
   "description": "This package is deprecated. You should be able to safely uninstall this from your project.",
-  "vrchatVersion" : "2022.1.1",
   "author" : {
     "name" : "Haï~"
   },
@@ -15,5 +14,8 @@
   "url" : "https://docs.hai-vr.dev/docs/products/animator-as-code/functions/ndmf-processor",
   "documentationUrl": "https://docs.hai-vr.dev/docs/products/animator-as-code/functions/ndmf-processor",
   "changelogUrl": "https://docs.hai-vr.dev/docs/products/animator-as-code/functions/ndmf-processor#depreciation",
-  "license": "MIT"
+  "license": "MIT",
+  "vrc-get": {
+    "yanked": "This package is deprecated. You should be able to safely uninstall this from your project."
+  }
 }
